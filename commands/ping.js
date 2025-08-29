@@ -1,15 +1,21 @@
 export default {
   name: "ping",
   description: "Check bot response time",
-  async execute(sock, m, commands, sendAndEcho, quickReply) {
-    // timestamp from the incoming WA message (seconds -> ms)
-    const sentAtMs = ((m.messageTimestamp?.low ?? m.messageTimestamp) ?? 0) * 1000;
-    const latency = Math.max(0, Date.now() - sentAtMs);
+  async execute(sock, m) {
+    const sentAtMs = ((m.messageTimestamp?.low ?? m.messageTimestamp) ?? 0) * 1000
+    const latency = Math.max(0, Date.now() - sentAtMs)
+
+    const jid = m.key.remoteJid || (m.key.participant ?? "")
+    try {
+      await sock.presenceSubscribe(jid)
+      await sock.sendPresenceUpdate("composing", jid)
+      try { await sock.readMessages([m.key]) } catch {}
+    } catch {}
 
     await sock.sendMessage(
-      m.key.remoteJid,
+      jid,
       { text: `Pong! Response time: ${latency} ms` },
       { quoted: m }
-    );
+    )
   }
 }
