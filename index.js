@@ -49,6 +49,11 @@ async function startBot() {
             : (type === "extendedTextMessage" ? m.message.extendedTextMessage.text : "")
 
         if (!text) return
+        
+      // Fast reply helper
+async function quickReply(sock, m, text) {
+  return sock.sendMessage(m.key.remoteJid, { text }, { quoted: m })
+}
 
         // Normalize (. ping -> .ping)
         let cmdText = text.trim().toLowerCase()
